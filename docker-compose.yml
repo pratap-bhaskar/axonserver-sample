@@ -1,0 +1,52 @@
+version: '3.7'
+services:
+  axonserver:
+    container_name: axonserver
+    image: axoniq/axonserver
+    hostname: axonserver
+    volumes:
+      - axonserver-data:/data
+      - axonserver-events:/eventdata
+      - axonserver-config:/config:ro
+    ports:
+      - 8024:8024
+      - 8124:8124
+      - 8224:8224
+    networks:
+      - demonetwork
+  demoapp:
+    container_name: demoapp
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment: 
+      - axon.axonserver.servers=axonserver:8124
+    ports:
+    - 8080:8080
+    links:
+      - axonserver
+    networks:
+      - demonetwork
+
+networks:
+  demonetwork:
+
+volumes:
+  axonserver-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PWD}/dockerdata/data
+      o: bind
+  axonserver-events:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PWD}/dockerdata/events
+      o: bind
+  axonserver-config:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PWD}/dockerdata/config
+      o: bind
